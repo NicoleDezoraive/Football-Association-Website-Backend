@@ -19,7 +19,7 @@
   "homepage": "https://github.com/Web-Development-Environments-2021/assignment-3-2-205590656_313584294#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "bootstrap": "^5.0.1",
+    "bootstrap": "^5.0.2",
     "bootstrap-vue": "^2.21.2",
     "client-sessions": "^0.8.0",
     "config": "^3.3.6",
