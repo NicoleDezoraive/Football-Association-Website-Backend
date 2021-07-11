@@ -1,0 +1,832 @@
+---
+openapi: 3.0.0
+info:
+  title: API of the Football Association Management System
+  description: This is a API for initial characterization document
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/NicoleDezoraive/simpleAPI/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: https://virtserver.swaggerhub.com/barmocha/API_assignment_3.1/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: auth
+  description: all authentication related routes
+- name: user
+  description: users personal app info
+- name: search
+  description: all search related routes
+- name: game
+  description: the games general info
+- name: team
+  description: the temes general info
+- name: player
+  description: the players general info
+- name: league
+  description: the leagues general info
+paths:
+  /Register:
+    post:
+      tags:
+      - auth
+      summary: user signs up to the website
+      description: saves all the users data in the DB
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        "201":
+          description: user created
+        "409":
+          description: username already exists
+        "406":
+          description: email is invalid
+  /Login:
+    post:
+      tags:
+      - auth
+      description: A JSON object containing the username and password.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body'
+        required: true
+      responses:
+        "200":
+          description: login succeeded
+        "401":
+          description: Username or Password incorrect
+  /Logout:
+    post:
+      tags:
+      - auth
+      description: uncontaining user, reset the session info
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          description: logout succeeded
+  /search/queryPlayer/namePlayer/{searchQuery}/gamePosition/{num}:
+    get:
+      tags:
+      - search
+      description: Serach for a player in the spoonacular API, using a search query. Resutls order by game position.
+      parameters:
+      - name: searchQuery
+        in: path
+        description: The search query for searching a query in the API
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: James Forrest
+      - name: num
+        in: path
+        description: number of player position
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: "3"
+      responses:
+        "200":
+          description: data of search results by player position
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerPreview'
+        "404":
+          description: No player found in current league in this position
+  /search/queryPlayer/namePlayer/{searchQuery}/groupName/{name}:
+    get:
+      tags:
+      - search
+      description: Serach for a player in the spoonacular API, using a search query. Resutls order by group name.
+      parameters:
+      - name: searchQuery
+        in: path
+        description: The search query for searching a query in the API
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: James Forrest
+      - name: name
+        in: path
+        description: name of player group
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: Celtic
+      responses:
+        "200":
+          description: data of search results by player team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerPreview'
+        "404":
+          description: No player found in current league in this group name
+  /search/queryTeam/nameTeam/{searchQuery}:
+    get:
+      tags:
+      - search
+      description: Serach for a team in the spoonacular API, using a search query.
+      parameters:
+      - name: searchQuery
+        in: path
+        description: The search query for searching a query in the API
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: Midtjylland
+      responses:
+        "200":
+          description: data of search results by player team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamPreview'
+        "404":
+          description: No team found in current league
+  /users/showThreeFavoriteGames:
+    get:
+      tags:
+      - user
+      summary: returns 3 next future games
+      description: returns an array of 3 next future games
+      responses:
+        "200":
+          description: data of 3 next future games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurrentCycleGamePreview'
+        "401":
+          description: Unauthorized
+        "404":
+          description: favorite games not found
+  /teams/fullTeamInfo/id/{teamID}:
+    get:
+      tags:
+      - team
+      description: Serach for a team in the spoonacular API, using a search query. Will return full info resuslts according to teamID param.
+      parameters:
+      - name: teamID
+        in: path
+        description: The team ID that serach from the API
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+        example: 939
+      responses:
+        "200":
+          description: full data of team
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/FullTeam'
+        "404":
+          description: It is not in current league
+  /players/fullPlayerInfo/ids/{playersID}:
+    get:
+      tags:
+      - player
+      description: Serach for players in the spoonacular API, using a search query. Will return full info resuslts according to playerID param.
+      parameters:
+      - name: playersID
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: array
+          items:
+            type: integer
+            description: The player ID that serach from the API
+      responses:
+        "200":
+          description: return full data of player
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerFull'
+        "404":
+          description: player is not  in current league
+  /teams/previewTeamInfo/ids/{teamsID}:
+    get:
+      tags:
+      - team
+      description: Serach for teams in the spoonacular API, using a search query. Will return preview info resuslts according to teamID param.
+      parameters:
+      - name: teamsID
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: array
+          items:
+            type: integer
+            description: The player ID that serach from the API
+      responses:
+        "200":
+          description: preview data of team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamPreview'
+        "404":
+          description: team is not  in current league
+  /players/previewPlayerInfo/ids/{playerID}:
+    get:
+      tags:
+      - player
+      description: Serach for a player in the spoonacular API, using a search query. Will return preview info resuslts according to playerID param.
+      parameters:
+      - name: playerID
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: array
+          items:
+            type: integer
+            description: The player ID that serach from the API
+      responses:
+        "200":
+          description: return data of player
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerPreview'
+        "404":
+          description: player is not  in current league
+  /game/currentCycleGames:
+    get:
+      tags:
+      - game
+      summary: returns current cycle games
+      description: returns an array of current cycle games that have not yet taken
+      responses:
+        "200":
+          description: data of current cycle games that have not yet taken
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurrentCycleGamePreview'
+  /game/pastGames:
+    get:
+      tags:
+      - game
+      summary: returns past games
+      description: returns an array of current cycle games that have not yet taken
+      responses:
+        "200":
+          description: data of last games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/PastGamePreview'
+  /users/favoriteGames:
+    get:
+      tags:
+      - user
+      summary: user see his list of favorite games
+      description: return all the games that user choose as his favorite
+      responses:
+        "200":
+          description: array of favorite games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurrentCycleGamePreview'
+        "401":
+          description: Unauthorized
+        "404":
+          description: favorite games not found
+  /users/addFavoriteGames:
+    post:
+      tags:
+      - user
+      summary: add favorite game to his favorites list
+      description: add a new game to favorite list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_1'
+        required: true
+      responses:
+        "201":
+          description: The game successfully saved as favorite
+        "401":
+          description: Unauthorized
+        "409":
+          description: This game is allready added
+  /league/getLeagueGames:
+    get:
+      tags:
+      - league
+      summary: user see all games in league
+      description: return all the games of league
+      responses:
+        "200":
+          description: array of all games in current league
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/PastGamePreview'
+                  - $ref: '#/components/schemas/CurrentCycleGamePreview'
+        "401":
+          description: Unauthorized
+        "403":
+          description: You do not have the appropriate permissions to perform this operation
+  /league/getDetails:
+    get:
+      tags:
+      - league
+      summary: return preview of league
+      description: return preview of league
+      responses:
+        "200":
+          description: show page of league details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                  - $ref: '#/components/schemas/previewLeague'
+  /league/addGameToLeague:
+    post:
+      tags:
+      - league
+      summary: 'add  game to league '
+      description: add a new game to list of games league
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_2'
+        required: true
+      responses:
+        "200":
+          description: The game added successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: You do not have the appropriate permissions to perform this operation
+        "409":
+          description: The game already exists in the system, you can not add the same game on the same day
+  /league/addResultGameInLeague:
+    post:
+      tags:
+      - league
+      summary: add result game
+      description: add resulte game from league page
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_3'
+        required: true
+      responses:
+        "200":
+          description: The result game added successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: You do not have the appropriate permissions to perform this operation
+        "404":
+          description: The game does not exist in the system or has not yet occurred
+  /league/addEventsGameInLeage:
+    post:
+      tags:
+      - league
+      summary: add an event game
+      description: add an event in game from league page
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/body_4'
+        required: true
+      responses:
+        "200":
+          description: The event game added successfully
+        "401":
+          description: Unauthorized
+        "403":
+          description: You do not have the appropriate permissions to perform this operation
+        "404":
+          description: The game does not exist in the system or has not yet occurred
+components:
+  schemas:
+    PlayerPreview:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          description: The player identifier, returned for further processing and actions on player
+          example: 1874
+        name:
+          type: string
+          description: The player fullname
+          example: Kim Christensen
+        team_id:
+          type: integer
+          description: The team id
+          example: 939
+        team_name:
+          type: string
+          description: The team name
+          example: Midtjylland
+        image:
+          type: string
+          description: The player image url
+          example: https://cdn.sportmonks.com/images/soccer/placeholder.png
+        position:
+          type: integer
+          description: The player position
+          example: 4
+    TeamPreview:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The team identifier, returned for further processing and actions on team
+          example: 86
+        name:
+          type: string
+          description: The team name
+          example: Silkeborg
+        logo_path:
+          type: string
+          description: The team logo image url
+          example: https://cdn.sportmonks.com/images//soccer/teams/22/86.png
+    PlayerFull:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          description: The player identifier, returned for further processing and actions on player
+          example: 1874
+        name:
+          type: string
+          description: The player fullname
+          example: Kim Christensen
+        team_id:
+          type: integer
+          description: team identifier
+          example: 939
+        team_name:
+          type: string
+          description: team name
+          example: Midtjylland
+        image:
+          type: string
+          description: The player image url
+          example: https://cdn.sportmonks.com/images/soccer/placeholder.png
+        position:
+          type: integer
+          description: The player position
+          example: 4
+        common_name:
+          type: string
+          description: common name of team
+          example: K. Christensen
+        nationality:
+          type: string
+          description: The player nationality
+          example: Denmark
+        birthcountry:
+          type: string
+          description: The player birthcountry
+          example: Scotland
+        height:
+          type: string
+          description: The player height
+          example: 191 cm
+        weight:
+          type: string
+          description: The player weight
+          example: "null"
+    PlayersTeam:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          description: player identifier
+          example: 527450
+        name:
+          type: string
+          description: player name
+          example: Patrik Sigurður Gunnarsson
+        team_id:
+          type: integer
+          description: team identifier
+          example: 86
+        team_name:
+          type: string
+          description: team name
+          example: Silkeborg
+        image:
+          type: string
+          description: The team logo image url
+          example: https://cdn.sportmonks.com/images/soccer/placeholder.png
+        position:
+          type: integer
+          description: position number
+          example: 1
+    CurrentCycleGamePreview:
+      type: object
+      properties:
+        game_id:
+          type: integer
+          description: The game identifier, returned for further processing and actions on game
+          example: 11
+        date:
+          type: string
+          description: The game date
+          example: 2021-07-15
+        time:
+          type: string
+          description: The game hour
+          example: 12:00:00
+        home_team:
+          type: string
+          description: The game host group
+          example: "939"
+        away_team:
+          type: string
+          description: The game guest team
+          example: "211"
+        stage:
+          type: string
+          description: The game court
+          example: "342"
+        referee:
+          type: string
+          description: The game referee
+          example: H
+    FullTeam:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/PlayersTeam'
+        historyGames:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/PastGamePreview'
+        FutureGames:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/CurrentCycleGamePreview'
+    PastGamePreview:
+      type: object
+      properties:
+        game_id:
+          type: integer
+          description: The game identifier, returned for further processing and actions on game
+          example: 4
+        date:
+          type: string
+          description: The game date
+          example: 2021-05-01
+        time:
+          type: string
+          description: The game time
+          example: 12:00:00
+        home_team:
+          type: string
+          description: The game host group
+          example: "85"
+        away_team:
+          type: string
+          description: The game guest team
+          example: "1789"
+        stage:
+          type: string
+          description: The game court
+          example: "5655"
+        result:
+          type: string
+          description: The game results
+          example: hapoel holon win
+        referee:
+          type: string
+          description: referee of game
+          example: E
+        event:
+          type: array
+          items:
+            allOf:
+            - $ref: '#/components/schemas/eventsGame'
+    previewLeague:
+      type: object
+      properties:
+        league_name:
+          type: string
+          description: name of laegue
+          example: Superliga
+        current_season_name:
+          type: string
+          description: name of curreent seasson
+          example: 2021/2022
+        current_stage_name:
+          type: string
+          description: name of current stage
+          example: "77447501"
+        next_game:
+          type: array
+          description: preview of next game in league
+          items:
+            $ref: '#/components/schemas/nextGame'
+    nextGame:
+      type: object
+      properties:
+        date:
+          type: string
+          description: The game date
+          example: 2021-05-01
+        time:
+          type: string
+          description: The game time
+          example: 12:00:00
+        home_team:
+          type: string
+          description: The game host group
+          example: "85"
+        away_team:
+          type: string
+          description: The game guest team
+          example: "1789"
+        stage:
+          type: string
+          description: The game court
+          example: "5655"
+    eventsGame:
+      type: object
+      properties:
+        event_id:
+          type: integer
+          description: The event identifier
+          example: 4
+        game_id:
+          type: integer
+          description: The game identifier, returned for further processing and actions on game
+          example: 4
+        date:
+          type: string
+          description: The game date
+          example: 2021-05-01
+        time:
+          type: string
+          description: The game time
+          example: 12:15:00
+        minute:
+          type: string
+          description: The minute of event game
+          example: "15"
+        description:
+          type: string
+          description: description of event
+          example: Yellow card for Danny
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: lahan_player
+        password:
+          type: string
+          example: lll123
+        firstname:
+          type: string
+          example: lahan
+        lastname:
+          type: string
+          example: barmocha
+        country:
+          type: string
+          example: "320"
+        email:
+          type: string
+          example: barmocha@gmail.com
+        picture:
+          type: string
+          example: https://res.cloudinary.com/dmayy2qco/image/upload/v1622193348/samples/people/smiling-man.jpg
+    body:
+      type: object
+      properties:
+        username:
+          maxLength: 8
+          minLength: 3
+          type: string
+          description: Contains only letters
+        password:
+          maxLength: 10
+          minLength: 5
+          type: string
+          description: Contains letters with at least 1 numerical character and 1 special characters
+      example:
+        username: nicole
+        password: 1234!
+    body_1:
+      type: object
+      properties:
+        game_id:
+          type: integer
+      example:
+        game_id: 10
+    body_2:
+      type: object
+      properties:
+        date:
+          type: string
+        time:
+          type: string
+        home_team:
+          type: string
+        away_team:
+          type: string
+        stage:
+          type: string
+        referee:
+          type: string
+      example:
+        date: 2021-07-20
+        time: 20:00:00
+        home_team: "211"
+        away_team: "85"
+        stage: "5661"
+        referee: A
+    body_3:
+      type: object
+      properties:
+        game_id:
+          type: integer
+        result:
+          type: string
+      example:
+        game_id: 7
+        result: 2-1
+    body_4:
+      type: object
+      properties:
+        game_id:
+          type: integer
+        date:
+          type: string
+        time:
+          type: string
+        minute:
+          type: string
+        description:
+          type: string
+      example:
+        game_id: 5
+        date: 2021-05-05
+        time: 15:30:00
+        minute: "30"
+        description: Goal to Rami
